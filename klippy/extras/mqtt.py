@@ -4,6 +4,7 @@
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
 
+import logging
 import uuid
 import paho.mqtt.client as mqtt
 
@@ -53,6 +54,7 @@ class PrinterMqtt(object):
 
         self.client.loop_stop()
         self.client.disconnect()
+        logging.info("Mqtt: Disconnected from broker")
 
         reactor = self.printer.get_reactor()
         # kill connection to broker and stop publishing updates
@@ -67,12 +69,14 @@ class PrinterMqtt(object):
         self.publish(messages)
 
     def update(self, eventtime):
-        
+        logging.debug("Mqtt: Running update loop")
 
     def publish(self, messages):
     # Publish messages to mqtt broker. Accepts list of dictionaries with keys 'topic' and 'payload'
         for message in messages:
-            self.client.publish('{}/{}'.format(self.topic_base, message['topic']), message['payload'])
+            topic = '{}/{}'.format(self.topic_base, message['topic'])
+            self.client.publish(topic, message['payload'])
+            logging.debug("Mqtt: Publishing message '{}' to topic '{}'".format(message['payload'], topic))
 
 def load_config(config):
     return PrinterMqtt(config)
